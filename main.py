@@ -107,7 +107,7 @@ def user_signup_correct():
     
     if not username_err and not password_err and not email_optional_err:
         username = username
-        return redirect('index.html' username=username)
+        return redirect('index.html', username=username)
         
 
     else:

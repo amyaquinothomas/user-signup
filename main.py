@@ -4,53 +4,23 @@ import cgi
 app = Flask(__name__)
 
 app.config['DEBUG'] = True 
+"""Need to do something with .format to get rid of the {0} that are on the signup page, 
+   the app works I just ran it. But it will not show the errors just not sure where you need 
+   to format it to get it to show errors. I just use flash now. Omar should know. 
+"""
 
-
-@app.route ('/') 
+@app.route ("/") 
 def index():
     return render_template('index.html')
 
 
-def blank(x):
-    if x:
-        return True
-    else:
-        return False
 
-
-def username_check(x):
-    if len(x) < 3 or len(x) > 20:
-        return False
-    else:
-        return True
-
-
-def password_check(x):
-    if len(x) < 3 or len(x) > 20:
-        return False
-    else:
-        return True
-
-def verify_password_check(x):
-    return
-
-def email_optional_check1(x):
-    if x.count ('@') >= 1:
-        return True
-    else:
-        return False
-
-def email_optional_check2(x):
-    if x.count ('.') >= 1:
-        return True
-    else:
-        return False
-
-@app.route ('/user-signup', methods=['POST'])
-def user_signup_correct():
+@app.route ('/user_signup', methods=['POST'])
+def user_signup():
+    
     username = request.form['username']
     password = request.form['password']
-    verify_password = request.form['verify_password']
+    verifypassword = request.form['verifypassword']
     email_optional = request.form['email_optional']
 
 
@@ -59,60 +29,38 @@ def user_signup_correct():
     password_err = ""
     verify_password_err = ""
     email_optional_err = ""
-
-    
-    username_error = "username needs to be at least 3 characters and up to 20 characters"
-    password_error = "password needs to be at least 3 characters and up to 20 characters"
-    verify_password_error = "passwords need to match"
-    email_optional_error = "email needs to have an @ symbol, contain no spaces, and a dot"
     
     #username errors
-    
-    if not blank(username):
-        username_err = username_error
-        username = ""
-
-    else:
-        if  not username_check(username):
-            username_err = username_error
-            username = ""
+    if len(username) < 3 or len(username) > 20 or " " in username:
+        username_err = "username needs to be at least 3 characters and up to 20 characters"
         
-   
     #password errors
    
-    if not password_check(password):
-        password_err = password_error
-        password = ""
+    if len(password) < 3 or len(password) > 20 or " " in password:
+        password_err = "password needs to be at least 3 characters and up to 20 characters"
+        password = ''
 
+
+    if verifypassword != password:
+        verify_password_err = "passwords need to match"
+        verifypassword = ''
    
-    
-    else:
-        if not verify_password_check(password):
-            password_err = password_error
-            password = ""
-
-
     #email errors
+    if email_optional != "":
+        if email_optional.strip(' ') != email_optional:
+            email_optional_err = 'Email cannot contain spaces. '
+        elif '@' not in email_optional or '.' not in email_optional:
+            email_optional_err = "email needs to have an @ symbol and a dot"
+    #if email_optional != "" and email_optional != "@" in email_optional or email_optional != "." in email_optional:
+        #email_optional_err = "email needs to have an @ symbol, contain no spaces, and a dot"
 
-    if not email_optional_check1(email_optional):
-        email_optional_err = email_optional_error
-        email = ""
-
+ 
+    if not email_optional_err and not password_err and not username_err and not verify_password_err:
+        return render_template('welcome.html', username=username)
     
     else:
-        if email_optional_check2(email_optional):
-            email_optional_err = email_optional_error
-            email_optional = ""
+        return render_template('index.html', username_err=username_err, password_err=password_err, username=username, email_optional=email_optional, password=password, verify_password_err=verify_password_err, email_optional_err=email_optional_err, verifypassword=verifypassword)
 
-    
-    if not username_err and not password_err and not email_optional_err:
-        username = username
-        return redirect('index.html', username=username)
-        
-
-    else:
-        return render_template ('index.html', username_error=username_error, username=username, password_error=password_error, )
-
-    app.run()
+app.run()
 
 
